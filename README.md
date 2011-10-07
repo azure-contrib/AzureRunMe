@@ -1,4 +1,4 @@
-AzureRunMe 1.0.0.18
+AzureRunMe 1.0.0.19
 ===================
 
 Probably the quickest way to get your legacy or third-party code running on Windows Azure.
@@ -140,7 +140,7 @@ Compiling AzureRunMe
 Prerequisites:
 
 * Visual Studio 2010
-* The Windows Azure SDK & Tools for Visual Studio
+* The Windows Azure SDK v1.5 & Tools for Visual Studio
 * The Windows Azure AppFabric SDK
 
 Diagnostics
@@ -348,9 +348,9 @@ Commercial Support
 
 This code is now being used for real, on several commercial projects! 
 
-See http://www.aws.net/azurelaunchpad or contact info@aws.net if you'd like to hire us or would like to purchase a formal support contract.
+See http://www.two10degrees.com or contact info@aws.net if you'd like to hire us or would like to purchase a formal support contract.
 
 Rob Blackwell
 
-June 2011
+October 2011
 

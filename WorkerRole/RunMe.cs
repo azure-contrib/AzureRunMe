@@ -22,6 +22,8 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Timers;
+using System.Xml;
 using Microsoft.ServiceBus.Samples;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Diagnostics;
@@ -29,8 +31,6 @@ using Microsoft.WindowsAzure.Diagnostics.Management;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 using SevenZip;
-using System.Xml;
-using System.Timers;
 
 
 namespace WorkerRole
@@ -48,7 +48,7 @@ namespace WorkerRole
 
         string approot;
 
-        System.Timers.Timer timer; 
+        System.Timers.Timer timer;
 
         // Configuration setting keys
         const string TRACE_FORMAT = "TraceFormat";
@@ -166,7 +166,7 @@ namespace WorkerRole
 
                 // Timer is used to schedule file copies to Blob store
                 timer.Interval = scheduledTransferPeriod.TotalMilliseconds;
-                timer.Enabled = true;              
+                timer.Enabled = true;
 
                 diagnosticMonitorConfiguration.PerformanceCounters.ScheduledTransferPeriod = scheduledTransferPeriod;
                 diagnosticMonitorConfiguration.WindowsEventLog.ScheduledTransferLogLevelFilter = logLevel;
@@ -182,7 +182,7 @@ namespace WorkerRole
                 Tracer.WriteLine(e, "Error");
             }
 
-            
+
 
             Tracer.WriteLine("Windows Azure Diagnostics updated", "Information");
 
@@ -266,7 +266,7 @@ namespace WorkerRole
             Trace.Listeners.Add(cloudTraceListener);
         }
 
-        
+
 
         /// <summary>
         /// Creates a package receipt (a simple text file in the temp directory) 
@@ -341,11 +341,13 @@ namespace WorkerRole
 
                 Tracer.WriteLine(string.Format("Extracting {0}", packageName), "Information");
 
-                SevenZipExtractor extractor = new SevenZipExtractor(stream);
-                // set 7zip dll path
-                string sevenZipPath = Path.Combine(Directory.GetCurrentDirectory(), @"Redist\7z64.dll");
-                SevenZipExtractor.SetLibraryPath(sevenZipPath);
-                extractor.ExtractArchive(workingDirectory);
+                using (SevenZipExtractor extractor = new SevenZipExtractor(stream))
+                {
+                    // set 7zip dll path
+                    string sevenZipPath = Path.Combine(Directory.GetCurrentDirectory(), @"Redist\7z64.dll");
+                    SevenZipExtractor.SetLibraryPath(sevenZipPath);
+                    extractor.ExtractArchive(workingDirectory);
+                }
             }
 
             Tracer.WriteLine("Extraction finished", "Information");
@@ -528,7 +530,7 @@ namespace WorkerRole
             Trace.AutoFlush = true;
 
             Tracer.WriteLine("", "Information");
-            Tracer.WriteLine(string.Format("AzureRunMe {0} on Windows Azure SDK {1}", 
+            Tracer.WriteLine(string.Format("AzureRunMe {0} on Windows Azure SDK {1}",
                 GetAzureRunMeVersion(), GetWindowsAzureSDKVersion()), "Information");
 
             Tracer.WriteLine("Copyright (c) 2010 - 2011 Active Web Solutions Ltd [www.aws.net]", "Information");
@@ -557,7 +559,14 @@ namespace WorkerRole
             try
             {
                 MountCloudDrive();
+            }
+            catch (Exception e)
+            {
+                Tracer.WriteLine(e, "Error");
+            }
 
+            try
+            {
                 // set 7zip dll path
                 string sevenZipPath = Path.Combine(approot, @"Redist\7z64.dll");
                 SevenZipExtractor.SetLibraryPath(sevenZipPath);
@@ -605,7 +614,7 @@ namespace WorkerRole
 
                         string packageReceiptFileName = Path.Combine(workingDirectory, packageName + ".receipt");
 
-                        if (alwaysInstallPackages || IsNewPackage(containerName, packageName,packageReceiptFileName))
+                        if (alwaysInstallPackages || IsNewPackage(containerName, packageName, packageReceiptFileName))
                         {
                             InstallPackage(containerName, packageName, workingDirectory);
                             WritePackageReceipt(packageReceiptFileName);
