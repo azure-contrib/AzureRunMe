@@ -1,5 +1,8 @@
 bin/
 obj/
+csx/
 *.suo
 *.user
 *.csdef
+*.ncrunch*
+AzureRunMe/Profiles

@@ -10,9 +10,7 @@ Introduction
 
 AzureRunMe is a boostrap program that provides an off-the-shelf CSPKG file that you can upload to Windows Azure Compute and just run.
 
-From there you can upload your code via ZIP files in Blob Storage and kick off your processes in a repeatable way, just by changing configuration.
-
-AzureRunMe preconfigures Remote Desktop access, making it easy to debug and diagnose problems.
+From there you can upload your code via ZIP files in Blob Storage and kick off your processes in a repeatable way, just by changing configuraon.
 
 If you are using Java, Clojure, C++ or other languages this might be the quickest way to get your code running in Azure without having to worry about building any .NET code.
 

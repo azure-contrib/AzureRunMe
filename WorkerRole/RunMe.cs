@@ -24,6 +24,7 @@ using System.Reflection;
 using System.Threading;
 using System.Timers;
 using System.Xml;
+using System.Linq;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.Diagnostics;
 using Microsoft.WindowsAzure.Diagnostics.Management;
@@ -424,7 +425,7 @@ namespace WorkerRole
 
         public string GetWorkingDirectory()
         {
-            return ExpandKeywords(RoleEnvironment.GetConfigurationSettingValue("WorkingDirectory"));
+            return ExpandKeywords(RoleEnvironment.GetConfigurationSettingValue(WORKING_DIRECTORY));
         }
 
         public bool OnStart()
@@ -518,13 +519,20 @@ namespace WorkerRole
 
                         string containerName = fields[0];
                         string packageName = fields[1];
-
-                        string packageReceiptFileName = Path.Combine(workingDirectory, packageName + ".receipt");
-
-                        if (alwaysInstallPackages || IsNewPackage(containerName, packageName, packageReceiptFileName))
+                        if (packageName == "*")
                         {
-                            InstallPackage(containerName, packageName, workingDirectory);
-                            WritePackageReceipt(packageReceiptFileName);
+                            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue(DATA_CONNECTION_STRING));
+                            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                            var container = blobClient.GetContainerReference(containerName);
+                            foreach (var blobListItem in container.ListBlobs().OrderBy(x => x.Uri.ToString()))
+                            {
+                                var blob = container.GetBlobReference(blobListItem.Uri.ToString());
+                                InstallPackageIfNewer(alwaysInstallPackages, workingDirectory, containerName, blob.Name);
+                            }
+                        }
+                        else
+                        {
+                            InstallPackageIfNewer(alwaysInstallPackages, workingDirectory, containerName, packageName);
                         }
                     }
                 }
@@ -532,6 +540,17 @@ namespace WorkerRole
                 {
                     Tracer.WriteLine(string.Format("Package \"{0}\" failed to install, {1}", package, e), "Information");
                 }
+            }
+        }
+
+        private void InstallPackageIfNewer(bool alwaysInstallPackages, string workingDirectory, string containerName, string packageName)
+        {
+            string packageReceiptFileName = Path.Combine(workingDirectory, packageName + ".receipt");
+
+            if (alwaysInstallPackages || IsNewPackage(containerName, packageName, packageReceiptFileName))
+            {
+                InstallPackage(containerName, packageName, workingDirectory);
+                WritePackageReceipt(packageReceiptFileName);
             }
         }
 
