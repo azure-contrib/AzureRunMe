@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceDefinition name="AzureRunMe" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2012-05.1.7">
+<ServiceDefinition name="AzureRunMe" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2013-03.2.0">
   <WorkerRole name="WorkerRole" enableNativeCodeExecution="true" vmsize="Small">
-    <Runtime executionContext="elevated">
-    </Runtime>
+    <Runtime executionContext="elevated"></Runtime>
     <Endpoints>
       <!-- See http://www.iana.org/assignments/port-numbers -->
       <InputEndpoint name="telnet" port="23" protocol="tcp" localPort="23" />
