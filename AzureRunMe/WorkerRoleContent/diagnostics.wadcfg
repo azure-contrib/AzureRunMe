@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DiagnosticMonitorConfiguration xmlns="http://schemas.microsoft.com/ServiceHosting/2010/10/DiagnosticsConfiguration" configurationChangePollInterval="PT1M" overallQuotaInMB="4096">
+
+  <DiagnosticInfrastructureLogs bufferQuotaInMB="1024"
+                                scheduledTransferLogLevelFilter="Verbose"
+                                scheduledTransferPeriod="PT1M" />
+
+  <Logs bufferQuotaInMB="1024"
+        scheduledTransferLogLevelFilter="Verbose"
+        scheduledTransferPeriod="PT1M" />
+
+  <WindowsEventLog bufferQuotaInMB="1024"
+                   scheduledTransferLogLevelFilter="Verbose"
+                   scheduledTransferPeriod="PT1M">
+    <DataSource name="Application!*"/>
+    <DataSource name="System!*"/>
+  </WindowsEventLog>
+
+  <PerformanceCounters bufferQuotaInMB="1024" scheduledTransferPeriod="PT2M">
+    <PerformanceCounterConfiguration counterSpecifier="\Memory\Available MBytes" sampleRate="PT1M"/>
+    <PerformanceCounterConfiguration counterSpecifier="\Processor(_Total)\% Processor Time" sampleRate="PT1M"/>
+    <PerformanceCounterConfiguration counterSpecifier="\Network Interface(*)\Bytes Sent/sec" sampleRate="PT1M"/>
+    <PerformanceCounterConfiguration counterSpecifier="\Network Interface(*)\Bytes Total/sec" sampleRate="PT1M"/>
+  </PerformanceCounters>
+
+</DiagnosticMonitorConfiguration>

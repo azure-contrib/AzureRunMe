@@ -217,7 +217,11 @@ namespace WorkerRole
 
             blob.FetchAttributes();
 
-            var blobTimeStamp = blob.Properties.LastModified;
+            DateTime blobTimeStamp = DateTime.MaxValue;
+            if (blob.Properties.LastModified.HasValue)
+            {
+                blobTimeStamp = blob.Properties.LastModified.Value.UtcDateTime;
+            }
 
             DateTime fileTimeStamp = File.GetCreationTimeUtc(packageReceiptFile);
 
