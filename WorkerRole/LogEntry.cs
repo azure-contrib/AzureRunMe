@@ -15,10 +15,9 @@
 //
 #endregion
 
-using System;
 using Microsoft.WindowsAzure.ServiceRuntime;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using System;
 
 namespace WorkerRole
 {

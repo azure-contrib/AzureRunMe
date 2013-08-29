@@ -15,25 +15,21 @@
 //
 #endregion
 
+using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
+using SevenZip;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Timers;
 using System.Xml;
-using System.Linq;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
-using Microsoft.WindowsAzure.Diagnostics.Management;
-using Microsoft.WindowsAzure.ServiceRuntime;
-using Microsoft.WindowsAzure.Storage;
-using SevenZip;
-using Microsoft.WindowsAzure.StorageClient;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 
 namespace WorkerRole
@@ -41,8 +37,6 @@ namespace WorkerRole
     public class RunMe
     {
         Log log;
-
-        CloudDrive cloudDrive = null;
 
         List<Process> processes = null;
 
@@ -59,9 +53,6 @@ namespace WorkerRole
         const string PACKAGES = "Packages";
         const string WORKING_DIRECTORY = "WorkingDirectory";
         const string COMMANDS = "Commands";
-        const string CLOUD_DRIVE_CONNECTION_STRING = "CloudDriveConnectionString";
-        const string CLOUD_DRIVE = "CloudDrive";
-        const string CLOUD_DRIVE_SIZE = "CloudDriveSize";
         const string DEFAULT_CONNECTION_LIMIT = "DefaultConnectionLimit";
         const string LABEL = "Label";
         const string UPDATE_INDICATOR = "UpdateIndicator";
@@ -116,9 +107,6 @@ namespace WorkerRole
             buffer = buffer.Replace("$now$", DateTime.Now.ToString());
             buffer = buffer.Replace("$roleroot$", Environment.GetEnvironmentVariable("RoleRoot"));
             buffer = buffer.Replace("$version$", GetAzureRunMeVersion());
-
-            if (cloudDrive != null)
-                buffer = buffer.Replace("$clouddrive$", cloudDrive.LocalPath);
 
             return buffer;
         }
@@ -298,7 +286,6 @@ namespace WorkerRole
             const string IP_ADDRESS = "ipaddress";
             const string DEPLOYMENT_ID = "deploymentid";
             const string ROLE_INSTANCE_ID = "roleinstanceid";
-            const string CLOUD_DRIVE = "clouddrive";
 
             string command = Path.Combine(
                     workingDirectory,
@@ -333,11 +320,6 @@ namespace WorkerRole
 
             SetEnvironmentVariable(startInfo, DEPLOYMENT_ID, RoleEnvironment.DeploymentId);
             SetEnvironmentVariable(startInfo, ROLE_INSTANCE_ID, RoleEnvironment.CurrentRoleInstance.Id);
-
-            if (cloudDrive != null)
-            {
-                SetEnvironmentVariable(startInfo, CLOUD_DRIVE, cloudDrive.LocalPath);
-            }
 
             Tracer.WriteLine(string.Format("Start Process {0}", command), "Information");
 
@@ -544,14 +526,7 @@ namespace WorkerRole
             log.WriteEntry("Stopping", "", GetLabel());
         }
 
-        private void UnmountCloudDrive()
-        {
-            if (cloudDrive != null)
-            {
-                Tracer.WriteLine(string.Format("Unmounting {0} from {1}", cloudDrive.Uri, cloudDrive.LocalPath), "Information");
-                cloudDrive.Unmount();
-            }
-        }
+    
 
         public void OnStop()
         {
@@ -562,8 +537,6 @@ namespace WorkerRole
 
             string commands = RoleEnvironment.GetConfigurationSettingValue("OnStopCommands");
             WaitForCommandsExit(RunCommands(commands));
-
-            UnmountCloudDrive();
 
             Tracer.WriteLine("Stopped", "Critical");
             log.WriteEntry("Stopped", "", GetLabel());
